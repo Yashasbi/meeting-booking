@@ -1,6 +1,7 @@
 package com.scheduler.meeting.controller;
 
 import com.scheduler.meeting.inputModel.CreateMeetingInput;
+import com.scheduler.meeting.inputModel.UpdateMeetingInfoInput;
 import com.scheduler.meeting.model.Meeting;
 import com.scheduler.meeting.outputmodel.CreateMeetingResponse;
 import com.scheduler.meeting.service.MeetingService;
@@ -39,5 +40,10 @@ public class MeetingController {
     @DeleteMapping(path="{meetingId}")
     public boolean deleteMeetingByMeetingId(@PathVariable("meetingId") UUID meetingId) {
         return meetingService.changeMeetingState(meetingId);
+    }
+
+    @PutMapping(path="{meetingId}")
+    public boolean updateMeeting(@PathVariable("meetingId") UUID meetingId,@RequestBody UpdateMeetingInfoInput updateMeetingInfoInput){
+            return meetingService.updateMeeting(meetingId,updateMeetingInfoInput);
     }
 }

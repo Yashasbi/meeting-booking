@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,6 +58,16 @@ public class MeetingDaoPostgres implements MeetingDao {
 
         jdbcTemplate.execute(query);
 
+        return true;
+    }
+
+    @Override
+    public boolean updateMeeting(UUID meetingId, Meeting meeting) {
+
+        String query;
+        query=String.format("Update MEETINGINFO SET meetingtitle = '%s',meetingdesc = '%s',startdate = '%s',enddate= '%s' ,meetingstatus = '%s',attendeeslist = '%s' where meetingid='%s' ;",
+                meeting.getMeetingTitle(),meeting.getMeetingDescription(),meeting.getStartTime().toString(), meeting.getEndTime().toString(), meeting.getMeetingState().toString(),String.join(",", meeting.getAttendees()),meetingId.toString());
+        jdbcTemplate.execute(query);
         return true;
     }
 }

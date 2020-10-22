@@ -4,7 +4,6 @@ import com.scheduler.meeting.model.Meeting;
 import com.scheduler.meeting.model.MeetingState;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Repository
@@ -32,4 +31,8 @@ public class FakeMeetingDataAccessService implements MeetingDao {
         return true;
     }
 
+    @Override
+    public boolean updateMeeting(UUID meetingId, Meeting meeting) {
+        return false;
+    }
 }
