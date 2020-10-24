@@ -64,6 +64,7 @@ public class MeetingDaoPostgres implements MeetingDao {
     @Override
     public boolean updateMeeting(UUID meetingId, Meeting meeting) {
 
+        System.out.println("Inside update meeting statement" +meeting.getStartTime());
         String query;
         query=String.format("Update MEETINGINFO SET meetingtitle = '%s',meetingdesc = '%s',startdate = '%s',enddate= '%s' ,meetingstatus = '%s',attendeeslist = '%s' where meetingid='%s' ;",
                 meeting.getMeetingTitle(),meeting.getMeetingDescription(),meeting.getStartTime().toString(), meeting.getEndTime().toString(), meeting.getMeetingState().toString(),String.join(",", meeting.getAttendees()),meetingId.toString());

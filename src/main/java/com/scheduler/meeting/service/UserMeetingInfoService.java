@@ -27,7 +27,7 @@ public class UserMeetingInfoService {
 
     }
     public boolean changeUserMeetingState(String userName, UUID meetingId,MeetingAcceptanceState meetingAcceptanceState){
-        userDao.updateUserMeeting(userName,meetingId,meetingAcceptanceState);
+        userDao.updateUserMeetingState(userName, meetingId, meetingAcceptanceState);
         return true;
     }
 }

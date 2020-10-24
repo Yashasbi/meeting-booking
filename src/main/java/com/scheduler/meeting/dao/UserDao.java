@@ -14,7 +14,11 @@ public interface UserDao {
 
      void putUserMeeting(String userName, Meeting meeting, MeetingAcceptanceState meetingAcceptanceState);
 
-     void updateUserMeeting(String userName, UUID meetingId,MeetingAcceptanceState meetingAcceptanceState);
+     void deleteMeetings(String userName, UUID meetingId);
 
-     void deleteCancelledMeetings(String userName,UUID meetingId);
+     void updateUserMeetingInfo(String userName, Meeting meeting, MeetingAcceptanceState meetingAcceptanceState);
+
+     List<String> findNewAttendeesAddedOrRemoved(List<String> newAttendeesList , List<String> oldAttendeesList);
+
+     void updateUserMeetingState(String userName, UUID meetingId, MeetingAcceptanceState meetingAcceptanceState);
 }

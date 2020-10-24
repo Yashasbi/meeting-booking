@@ -32,6 +32,7 @@ public class UserController {
         return userMeetingInfoService.getMeetingListByUser(username,startTimeData,endTimeData);
 
     }
+
     @PutMapping
     public boolean changeUserMeetingState(@RequestParam(name="userName") String userName, @RequestBody ChangeUserMeetingStateInput changeUserMeetingStateInput){
 
