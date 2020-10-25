@@ -90,8 +90,14 @@ public class UserDaoPostgres implements UserDao{
 
     @Override
     public void updateUserMeetingState(String userName, UUID meetingId, MeetingAcceptanceState meetingAcceptanceState) {
-        System.out.println("Updating user info");
-        String query = String.format("Update usermeeting set acceptancestate='%s' where (username = '%s' and meetingid = '%s');",meetingAcceptanceState.toString(),userName,meetingId.toString());
-        jdbcTemplate.execute(query);
+        if(meetingAcceptanceState.equals(MeetingAcceptanceState.DECLINED)){
+            System.out.println("User to be removed from table");
+            deleteMeetings(userName,meetingId);
+        }
+        else{
+            String query = String.format("Update usermeeting set acceptancestate='%s' where (username = '%s' and meetingid = '%s');",meetingAcceptanceState.toString(),userName,meetingId.toString());
+            jdbcTemplate.execute(query);
+        }
+
     }
 }

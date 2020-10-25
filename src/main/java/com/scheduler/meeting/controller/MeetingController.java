@@ -21,6 +21,9 @@ public class MeetingController {
     public CreateMeetingResponse createMeeting(@RequestBody CreateMeetingInput input)
     {
 
+        for(String s : input.getAttendees()){
+            System.out.println(s);
+        }
         UUID meetingId = meetingService.createMeeting(input.getOrganizerName(),
                 input.getAttendees(), input.getMeetingTitle(), input.getMeetingDescription(), input.getStartTime(), input.getEndTime());
 

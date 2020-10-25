@@ -12,8 +12,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class UpdateMeetingInfoInput {
-
-    private String organizerName;
     private List<String> attendees;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
