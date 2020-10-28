@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequestMapping("api/v1/meeting")
@@ -32,7 +33,7 @@ public class MeetingController {
         else{
 
             System.out.println("Else block");
-           // meetingService.findConfilctingMeetings(input.getOrganizerName(),input.getStartTime(),input.getEndTime());
+             meetingService.findConfilctingMeetings(input.getOrganizerName(),input.getStartTime(),input.getEndTime());
             UUID meetingId = meetingService.createMeeting(input.getOrganizerName(),
                     input.getAttendees(), input.getMeetingTitle(), input.getMeetingDescription(), Timestamp.valueOf(input.getStartTime()), Timestamp.valueOf(input.getEndTime()));
 
@@ -44,7 +45,11 @@ public class MeetingController {
 
     @GetMapping(path="{meetingId}")
     public Meeting getMeetingById(@PathVariable("meetingId") UUID meetingId ){
-        return  meetingService.getMeetingById(meetingId);
+        Optional<Meeting> optionalMeeting = meetingService.getMeetingById(meetingId);
+        if(optionalMeeting.isPresent()){
+            return optionalMeeting.get();
+        }
+        throw new IllegalArgumentException("Meeting Id not found");
     }
 
     @DeleteMapping(path="{meetingId}")

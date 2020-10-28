@@ -12,14 +12,13 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Repository
 @Primary
-public class UserDaoPostgres implements UserDao{
+public class UserDaoPostgres implements UserDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -29,36 +28,24 @@ public class UserDaoPostgres implements UserDao{
 
         String query = "SELECT A.*,B.acceptancestate FROM MEETINGINFO A INNER JOIN USERMEETING B ON  A.meetingid=B.meetingid WHERE (B.username=? and  B.startdate >= ? and B.enddate <= ? );";
 
+        return jdbcTemplate.query(query, new Object[]{username, Timestamp.valueOf(startDate), Timestamp.valueOf(endDate)}, (resultSet, i) -> {
 
+        String meetingId = resultSet.getString(MeetingSchedulerConstants.MEETING_ID_COLUMN);
+        String meetingTitle = resultSet.getString(MeetingSchedulerConstants.MEETING_TITLE_COLUMN);
+        String organizer = resultSet.getString(MeetingSchedulerConstants.ORGANISER_NAME_COLUMN);
+        String meetingDesc = resultSet.getString(MeetingSchedulerConstants.MEETING_DESCRIPTION_COLUMN);
+        Timestamp startLocalDateTime = resultSet.getTimestamp(MeetingSchedulerConstants.START_DATE_COLUMN);
+        Timestamp endLocalDateTime = resultSet.getTimestamp(MeetingSchedulerConstants.END_DATE_COLUMN);
+        MeetingState meetingState = MeetingState.valueOf(resultSet.getString(MeetingSchedulerConstants.MEETING_STATUS_COLUMN));
+        String listOfAttendeesString = resultSet.getString(MeetingSchedulerConstants.ATTENDEES_LIST_COLUMN);
 
+        List<String> attendeesList = Arrays.asList(listOfAttendeesString.split(","));
 
-        List<UserMeeting> userMeetingList = new ArrayList<>();
-
-
-
-        UserMeeting userMeeting = jdbcTemplate.queryForObject(query, new Object[]{username, Timestamp.valueOf(startDate), Timestamp.valueOf(endDate)}, (resultSet, i) -> {
-
-            String meetingId = resultSet.getString(MeetingSchedulerConstants.MEETING_ID_COLUMN);
-            String meetingTitle = resultSet.getString(MeetingSchedulerConstants.MEETING_TITLE_COLUMN);
-            String organizer = resultSet.getString(MeetingSchedulerConstants.ORGANISER_NAME_COLUMN);
-            String meetingDesc = resultSet.getString(MeetingSchedulerConstants.MEETING_DESCRIPTION_COLUMN);
-            Timestamp startlocalDateTime = resultSet.getTimestamp(MeetingSchedulerConstants.START_DATE_COLUMN);
-            Timestamp endlocalDateTime = resultSet.getTimestamp(MeetingSchedulerConstants.END_DATE_COLUMN);
-            MeetingState meetingState = MeetingState.valueOf(resultSet.getString(MeetingSchedulerConstants.MEETING_STATUS_COLUMN));
-            String listOfAttendeesString = resultSet.getString(MeetingSchedulerConstants.ATTENDEES_LIST_COLUMN);
-
-            List<String> attendeesList = Arrays.asList(listOfAttendeesString.split(","));
-
-            MeetingAcceptanceState meetingAcceptanceState = MeetingAcceptanceState.valueOf(resultSet.getString("acceptanceState"));
-            Meeting meeting = new Meeting(organizer,attendeesList,UUID.fromString(meetingId),startlocalDateTime, endlocalDateTime ,meetingTitle,meetingDesc,meetingState);
-            return new UserMeeting(meeting, meetingAcceptanceState);
+        MeetingAcceptanceState meetingAcceptanceState = MeetingAcceptanceState.valueOf(resultSet.getString("acceptanceState"));
+        Meeting meeting = new Meeting(organizer,attendeesList,UUID.fromString(meetingId),startLocalDateTime, endLocalDateTime ,meetingTitle,meetingDesc,meetingState);
+        return new UserMeeting(meeting, meetingAcceptanceState);
         });
-        userMeetingList.add(userMeeting);
-        return  userMeetingList;
     }
-
-
-
 
     @Override
     public void putUserMeeting(String userName, Meeting meeting, MeetingAcceptanceState meetingAcceptanceState) {
@@ -110,6 +97,13 @@ public class UserDaoPostgres implements UserDao{
 
         //String query = "SELECT * FROM USERMEETING WHERE userName = ? and startTime >= ? and endTime <= ?";
         List<UserMeeting> userMeetings = getMeetingListByUser(userName,startTime,endTime);
-        return userMeetings == null;
+        if (userMeetings.size() == 0){
+            return true;
+        }
+        else{
+            return false;
+        }
+
     }
+
 }

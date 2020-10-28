@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -42,68 +43,76 @@ public class MeetingService
         }
         return  meetingId;
     }
-    public Meeting getMeetingById(UUID uuid){
+    public Optional<Meeting> getMeetingById(UUID uuid){
         return meetingDao.getMeetingById(uuid);
     }
 
     public boolean changeMeetingState(UUID meetingId){
 
-        Meeting meeting = meetingDao.getMeetingById(meetingId);
-        String organizerName = meeting.getOrganizerName();
-        userDao.deleteMeetings(organizerName, meetingId);
-        List<String> attendees = meeting.getAttendees();
-        userDao.deleteMeetings(null, meetingId);
-        return meetingDao.changeMeetingByMeetingId(meeting);
+        Optional<Meeting> meetingOptional = meetingDao.getMeetingById(meetingId);
+        if(meetingOptional.isPresent()){
+            Meeting meeting = meetingOptional.get();
+            String organizerName = meeting.getOrganizerName();
+            userDao.deleteMeetings(organizerName, meetingId);
+            List<String> attendees = meeting.getAttendees();
+            userDao.deleteMeetings(null, meetingId);
+            return meetingDao.changeMeetingByMeetingId(meeting);
+        }
+        return false;
     }
 
     public boolean updateMeeting(UUID meetingId,UpdateMeetingInfoInput updateMeetingInfoInput){
 
-        Meeting meeting = meetingDao.getMeetingById(meetingId);
-        List<String> existingAttendeesList = meeting.getAttendees();
-        boolean startTimeChanged = false;
-        boolean endTimeChanged = false;
+        Optional<Meeting> meetingOptional = meetingDao.getMeetingById(meetingId);
+        if (meetingOptional.isPresent()){
+            Meeting meeting = meetingOptional.get();
+            List<String> existingAttendeesList = meeting.getAttendees();
+            boolean startTimeChanged = false;
+            boolean endTimeChanged = false;
 
-        if(updateMeetingInfoInput.getMeetingTitle() != null) {
-            meeting.setMeetingTitle(updateMeetingInfoInput.getMeetingTitle());
-        }
-        if(updateMeetingInfoInput.getMeetingDescription() != null) {
-            meeting.setMeetingDescription(updateMeetingInfoInput.getMeetingDescription());
-        }
-        if(updateMeetingInfoInput.getStartTime()!=null){
-            System.out.println("Updated time is " +updateMeetingInfoInput.getStartTime());
-            meeting.setStartTime(updateMeetingInfoInput.getStartTime());
-            System.out.println("Time in meeting object is " +meeting.getStartTime());
-            startTimeChanged = true;
-        }
-        if(updateMeetingInfoInput.getEndTime() != null) {
-            meeting.setEndTime(updateMeetingInfoInput.getEndTime());
-            endTimeChanged = true;
-        }
-        if(updateMeetingInfoInput.getMeetingState()!=null) {
-            meeting.setMeetingState(updateMeetingInfoInput.getMeetingState());
-        }
-        if(updateMeetingInfoInput.getAttendees()!=null) {
-            meeting.setAttendees(updateMeetingInfoInput.getAttendees());
+            if(updateMeetingInfoInput.getMeetingTitle() != null) {
+                meeting.setMeetingTitle(updateMeetingInfoInput.getMeetingTitle());
+            }
+            if(updateMeetingInfoInput.getMeetingDescription() != null) {
+                meeting.setMeetingDescription(updateMeetingInfoInput.getMeetingDescription());
+            }
+            if(updateMeetingInfoInput.getStartTime()!=null){
+                System.out.println("Updated time is " +updateMeetingInfoInput.getStartTime());
+                meeting.setStartTime(updateMeetingInfoInput.getStartTime());
+                System.out.println("Time in meeting object is " +meeting.getStartTime());
+                startTimeChanged = true;
+            }
+            if(updateMeetingInfoInput.getEndTime() != null) {
+                meeting.setEndTime(updateMeetingInfoInput.getEndTime());
+                endTimeChanged = true;
+            }
+            if(updateMeetingInfoInput.getMeetingState()!=null) {
+                meeting.setMeetingState(updateMeetingInfoInput.getMeetingState());
+            }
+            if(updateMeetingInfoInput.getAttendees()!=null) {
+                meeting.setAttendees(updateMeetingInfoInput.getAttendees());
 
-            List<String> newAttendeees = findDifferenceBetweenTwoList(updateMeetingInfoInput.getAttendees(), existingAttendeesList);
-            List<String> removedAttenddes = findDifferenceBetweenTwoList(existingAttendeesList, updateMeetingInfoInput.getAttendees());
+                List<String> newAttendeees = findDifferenceBetweenTwoList(updateMeetingInfoInput.getAttendees(), existingAttendeesList);
+                List<String> removedAttenddes = findDifferenceBetweenTwoList(existingAttendeesList, updateMeetingInfoInput.getAttendees());
 
-            removeMeetingForUserList(removedAttenddes, meetingId);
-            addNewAttenddesList(newAttendeees, meeting);
+                removeMeetingForUserList(removedAttenddes, meetingId);
+                addNewAttenddesList(newAttendeees, meeting);
+            }
+
+            /* Change the user table only when time of meeting is modified */
+
+            if(startTimeChanged || endTimeChanged) {
+
+                System.out.println("Time in meeting object is " +meeting.getStartTime());
+                System.out.println("Start time changed");
+                userDao.updateUserMeetingInfo(meeting.getOrganizerName(),meeting,MeetingAcceptanceState.ACCEPTED);
+                List<String> commonUserList = findCommonBetweenTwoList(existingAttendeesList, updateMeetingInfoInput.getAttendees());
+                updateMeetingForUserList(commonUserList, meeting);
+            }
+
+            return meetingDao.updateMeeting(meetingId, meeting);
         }
-
-        /* Change the user table only when time of meeting is modified */
-
-        if(startTimeChanged || endTimeChanged) {
-
-            System.out.println("Time in meeting object is " +meeting.getStartTime());
-            System.out.println("Start time changed");
-            userDao.updateUserMeetingInfo(meeting.getOrganizerName(),meeting,MeetingAcceptanceState.ACCEPTED);
-            List<String> commonUserList = findCommonBetweenTwoList(existingAttendeesList, updateMeetingInfoInput.getAttendees());
-            updateMeetingForUserList(commonUserList, meeting);
-        }
-
-        return meetingDao.updateMeeting(meetingId, meeting);
+        return true;
     }
 
     private void addNewAttenddesList(List<String> newAttendeees, Meeting meeting) {

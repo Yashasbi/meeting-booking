@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -32,10 +33,10 @@ public class MeetingDaoPostgres implements MeetingDao {
     }
 
     @Override
-    public Meeting getMeetingById(UUID meetingId) {
+    public Optional<Meeting> getMeetingById(UUID meetingId) {
 
         String query = "SELECT * FROM MEETINGINFO WHERE MEETINGID = ?";
-        Meeting meeting = jdbcTemplate.queryForObject(query, new Object[]{meetingId.toString()}, (resultSet, i) -> {
+        List<Meeting> meeting = jdbcTemplate.query(query, new Object[]{meetingId.toString()}, (resultSet, i) -> {
 
             String meetingTitle = resultSet.getString(MeetingSchedulerConstants.MEETING_TITLE_COLUMN);
             String organizer = resultSet.getString(MeetingSchedulerConstants.ORGANISER_NAME_COLUMN);
@@ -50,7 +51,7 @@ public class MeetingDaoPostgres implements MeetingDao {
             return new Meeting(organizer, attendeesList, meetingId, startlocalDateTime, endlocalDateTime, meetingTitle, meetingDesc, meetingState);
         });
 
-        return meeting;
+        return meeting.stream().findFirst();
     }
 
     @Override
