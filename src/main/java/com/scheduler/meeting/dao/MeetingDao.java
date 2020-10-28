@@ -13,5 +13,7 @@ public interface MeetingDao {
 
     public boolean updateMeeting(UUID meetingId,Meeting meeting);
 
+    //public boolean getAllMeetings();
+
 
 }

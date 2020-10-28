@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,8 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 public class UpdateMeetingInfoInput {
     private List<String> attendees;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private Timestamp startTime;
+    private Timestamp endTime;
     private String meetingTitle;
     private String meetingDescription;
     private MeetingState meetingState;

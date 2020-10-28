@@ -1,5 +1,7 @@
 package com.scheduler.meeting.service;
 
+import com.scheduler.meeting.customexceptions.ConflictingMeetingException;
+import com.scheduler.meeting.customexceptions.InvalidStartTimeException;
 import com.scheduler.meeting.dao.MeetingDao;
 import com.scheduler.meeting.dao.UserDao;
 import com.scheduler.meeting.inputModel.UpdateMeetingInfoInput;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +31,7 @@ public class MeetingService
     private UserDao userDao;
 
 
-    public UUID createMeeting(String organizerName, List<String> attendees, String meetingTitle, String meetingDescription, LocalDateTime startTime, LocalDateTime endTime)
+    public UUID createMeeting(String organizerName, List<String> attendees, String meetingTitle, String meetingDescription, Timestamp startTime, Timestamp endTime)
     {
         UUID meetingId=UUID.randomUUID();
         Meeting meeting=new Meeting(organizerName,attendees,meetingId,startTime,endTime,meetingTitle,meetingDescription, MeetingState.SCHEDULED);
@@ -130,6 +133,11 @@ public class MeetingService
         userList.forEach(user -> {
             userDao.updateUserMeetingInfo(user, meeting, MeetingAcceptanceState.TENTATIVE);
         });
+    }
+    public void findConfilctingMeetings(String userName,LocalDateTime startTime,LocalDateTime endTime) throws ConflictingMeetingException {
+          if(!userDao.isMeetingScheduledBetweenTimeInterval(userName,startTime,endTime)){
+              throw new ConflictingMeetingException("**************Conflicting time found.Please select a different time********************");
+          }
     }
 }
 

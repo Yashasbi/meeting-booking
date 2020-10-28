@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -39,8 +40,8 @@ public class MeetingDaoPostgres implements MeetingDao {
             String meetingTitle = resultSet.getString(MeetingSchedulerConstants.MEETING_TITLE_COLUMN);
             String organizer = resultSet.getString(MeetingSchedulerConstants.ORGANISER_NAME_COLUMN);
             String meetingDesc = resultSet.getString(MeetingSchedulerConstants.MEETING_DESCRIPTION_COLUMN);
-            LocalDateTime startlocalDateTime = LocalDateTime.parse(resultSet.getString(MeetingSchedulerConstants.START_DATE_COLUMN));
-            LocalDateTime endlocalDateTime = LocalDateTime.parse(resultSet.getString(MeetingSchedulerConstants.END_DATE_COLUMN));
+            Timestamp startlocalDateTime = resultSet.getTimestamp(MeetingSchedulerConstants.START_DATE_COLUMN);
+            Timestamp endlocalDateTime = resultSet.getTimestamp(MeetingSchedulerConstants.END_DATE_COLUMN);
             MeetingState meetingState = MeetingState.valueOf(resultSet.getString(MeetingSchedulerConstants.MEETING_STATUS_COLUMN));
             String listOfAttendeesString = resultSet.getString(MeetingSchedulerConstants.ATTENDEES_LIST_COLUMN);
 
@@ -71,4 +72,6 @@ public class MeetingDaoPostgres implements MeetingDao {
         jdbcTemplate.execute(query);
         return true;
     }
+
+
 }

@@ -21,4 +21,6 @@ public interface UserDao {
      List<String> findNewAttendeesAddedOrRemoved(List<String> newAttendeesList , List<String> oldAttendeesList);
 
      void updateUserMeetingState(String userName, UUID meetingId, MeetingAcceptanceState meetingAcceptanceState);
+
+     boolean isMeetingScheduledBetweenTimeInterval(String userName, LocalDateTime startTime, LocalDateTime endTime);
 }

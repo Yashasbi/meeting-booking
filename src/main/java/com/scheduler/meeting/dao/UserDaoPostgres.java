@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,19 +27,23 @@ public class UserDaoPostgres implements UserDao{
     @Override
     public List<UserMeeting> getMeetingListByUser(String username, LocalDateTime startDate, LocalDateTime endDate) {
 
-        System.out.println("New pppppp");
-        String query = "SELECT A.*,B.acceptancestate FROM MEETINGINFO A INNER JOIN USERMEETING B ON  A.meetingid=B.meetingid WHERE (B.username=? and  B.startdate =? and B.enddate=?);";
+        String query = "SELECT A.*,B.acceptancestate FROM MEETINGINFO A INNER JOIN USERMEETING B ON  A.meetingid=B.meetingid WHERE (B.username=? and  B.startdate >= ? and B.enddate <= ? );";
+
+
+
+
         List<UserMeeting> userMeetingList = new ArrayList<>();
 
-        UserMeeting userMeeting = jdbcTemplate.queryForObject(query, new Object[]{username, startDate.toString(), endDate.toString()}, (resultSet, i) -> {
 
-            System.out.println("New pppppp");
+
+        UserMeeting userMeeting = jdbcTemplate.queryForObject(query, new Object[]{username, Timestamp.valueOf(startDate), Timestamp.valueOf(endDate)}, (resultSet, i) -> {
+
             String meetingId = resultSet.getString(MeetingSchedulerConstants.MEETING_ID_COLUMN);
             String meetingTitle = resultSet.getString(MeetingSchedulerConstants.MEETING_TITLE_COLUMN);
             String organizer = resultSet.getString(MeetingSchedulerConstants.ORGANISER_NAME_COLUMN);
             String meetingDesc = resultSet.getString(MeetingSchedulerConstants.MEETING_DESCRIPTION_COLUMN);
-            LocalDateTime startlocalDateTime = LocalDateTime.parse(resultSet.getString(MeetingSchedulerConstants.START_DATE_COLUMN));
-            LocalDateTime endlocalDateTime = LocalDateTime.parse(resultSet.getString(MeetingSchedulerConstants.END_DATE_COLUMN));
+            Timestamp startlocalDateTime = resultSet.getTimestamp(MeetingSchedulerConstants.START_DATE_COLUMN);
+            Timestamp endlocalDateTime = resultSet.getTimestamp(MeetingSchedulerConstants.END_DATE_COLUMN);
             MeetingState meetingState = MeetingState.valueOf(resultSet.getString(MeetingSchedulerConstants.MEETING_STATUS_COLUMN));
             String listOfAttendeesString = resultSet.getString(MeetingSchedulerConstants.ATTENDEES_LIST_COLUMN);
 
@@ -99,5 +104,12 @@ public class UserDaoPostgres implements UserDao{
             jdbcTemplate.execute(query);
         }
 
+    }
+    @Override
+    public boolean isMeetingScheduledBetweenTimeInterval(String userName, LocalDateTime startTime, LocalDateTime endTime) {
+
+        //String query = "SELECT * FROM USERMEETING WHERE userName = ? and startTime >= ? and endTime <= ?";
+        List<UserMeeting> userMeetings = getMeetingListByUser(userName,startTime,endTime);
+        return userMeetings == null;
     }
 }
